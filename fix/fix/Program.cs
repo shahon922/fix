@@ -14,7 +14,7 @@ namespace fix
         public int Atk { get; }
         public int Def { get; }
         public int Hp { get; }
-        public int Gold { get; }
+        public int Gold { get; set; }
 
         public Charater(string name, string jop, int level, int atk, int def, int hp, int gold)
         {
@@ -37,10 +37,12 @@ namespace fix
         public int Atk { get; }
         public int Def { get; }
         public int Hp { get; }
+        public int Price { get; set; }
         public bool IsEquipped { get; set; }
         public static int ItemCnt = 0;
+        public int Count = 1;
 
-        public Item(string name, string description, int type, int atk, int def, int hp, bool isEquipped = false)
+        public Item(string name, string description, int type, int atk, int def, int hp,int price, bool isEquipped = false, int count = 1)
         {
             Name = name;
             Description = description;
@@ -48,10 +50,58 @@ namespace fix
             Atk = atk;
             Def = def;
             Hp = hp;
+            Price = price;
             IsEquipped = isEquipped;
+            Count = count;
         }
 
-        public void PrintItmeStatDescription(bool withNumber = false, int idx = 0)
+        public void PrintItmeStatDescription(bool withNumber = false, int idx = 0) // 인벤토리 장착 E 출력
+        {
+            if(Count == 0)
+            {
+                Console.Write("- ");
+                if (withNumber)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("{0} ", idx);
+                    Console.ResetColor();
+                }
+                if (IsEquipped)
+                {
+                    Console.Write("[");
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.Write("E");
+                    Console.ResetColor();
+                    Console.Write("]");
+                    Console.Write(PadRightForMixedText(Name, 9));
+                }
+                else
+                {
+                    Console.Write(PadRightForMixedText(Name, 12));
+                }
+                Console.Write(" | ");
+
+                // {(Atk >= 0 ? "+" : "") [조건 ? 조건이 참이라면 : 조건이 거짓이라면]
+                if (Atk != 0)
+                {
+                    Console.Write($"Atk {(Atk >= 0 ? "+" : "")}{Atk}");
+                }
+                else if (Def != 0)
+                {
+                    Console.Write($"Def {(Def >= 0 ? "+" : "")}{Def}");
+                }
+                else if (Hp != 0)
+                {
+                    Console.Write($"Hp {(Hp >= 0 ? "+" : "")}{Hp}");
+                }
+
+                Console.Write(" | ");
+
+                Console.WriteLine(Description);
+            }
+        }
+
+        public void PurchasItmeDescription(bool withNumber = false, int idx = 0) // 상점 내용 출력
         {
             Console.Write("- ");
             if (withNumber)
@@ -59,23 +109,12 @@ namespace fix
                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
                 Console.Write("{0} ", idx);
                 Console.ResetColor();
-            }
-            if (IsEquipped)
-            {
-                Console.Write("[");
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.Write("E");
-                Console.ResetColor();
-                Console.Write("]");
-                Console.Write(PadRightForMixedText(Name, 9));
-            }
-            else
-            {
-                Console.Write(PadRightForMixedText(Name, 12));
-            }
+            }         
+            Console.Write(PadRightForMixedText(Name, 9));
             Console.Write(" | ");
 
             // {(Atk >= 0 ? "+" : "") [조건 ? 조건이 참이라면 : 조건이 거짓이라면]
+            // 능력치가 0이 아니라면 +를 붙여 출력해라 : 붙이지 말고 출력해라
             if (Atk != 0)
             {
                 Console.Write($"Atk {(Atk >= 0 ? "+" : "")}{Atk}");
@@ -91,7 +130,20 @@ namespace fix
 
             Console.Write(" | ");
 
-            Console.WriteLine(Description);
+            Console.Write(Description);
+
+            Console.Write(" | ");
+
+            if(Count == 1)
+            {
+                Console.WriteLine("{0} G", Price);
+            }
+            else
+            {
+                Console.WriteLine("구매완료");
+            }
+
+            
         }
 
         public static int GetPrintableLength(string str)
@@ -119,11 +171,13 @@ namespace fix
             int padding = totalLength - currentLength;
             return str.PadRight(str.Length + padding);
         }
+
+        
     }
     internal class Program
     {
         static Charater player;
-        static Item[] items;
+        static Item[] items; // 상점 아이템 목록
         static void Main(string[] args)
         {
             // 구성
@@ -159,13 +213,16 @@ namespace fix
 
             Console.WriteLine("");
 
-            switch(CheckValidInput(1, 2))
+            switch(CheckValidInput(1, 3))
             {
                 case 1:
                     StatusMenu();
                     break;
                 case 2:
                     InventoryMenu();
+                    break;
+                case 3:
+                    ShopMenu();
                     break;
 
             }
@@ -204,6 +261,81 @@ namespace fix
             }
         }
 
+        private static void PurchaseMenu() 
+        {
+            Console.Clear();
+
+            ShowHighlightedText("상점 - 아이템 구매");
+            Console.WriteLine("필요한 아이템을 얻을 수 있습니다.");
+            Console.WriteLine("");
+            Console.WriteLine("[보유 골드]");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("{0} ", player.Gold);
+            Console.ResetColor();
+            Console.WriteLine("G");
+
+
+            for (int i = 0; i < Item.ItemCnt; i++)
+            {
+                items[i].PurchasItmeDescription(true, i+1);
+            }
+
+            Console.WriteLine("");
+            Console.WriteLine("0. 뒤로가기");
+            Console.WriteLine("");
+
+            int keyInput = CheckValidInput(0, Item.ItemCnt);
+
+            switch (keyInput)
+            {
+                case 0:
+                    ShopMenu();
+                    break;
+                default:
+                    BuyItem(keyInput - 1);
+                    PurchaseMenu();
+                    break;
+
+            }
+        }
+
+        private static void ShopMenu()
+        {
+            Console.Clear();
+
+            ShowHighlightedText("상점");
+            Console.WriteLine("필요한 아이템을 얻을 수 있습니다.");
+            Console.WriteLine("");
+            Console.WriteLine("[보유 골드]");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("{0} ", player.Gold);
+            Console.ResetColor();
+            Console.WriteLine("G");
+
+            for (int i = 0; i < Item.ItemCnt; i++)
+            {
+                items[i].PurchasItmeDescription();
+            }
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+            Console.WriteLine("1. 아이템 구매");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 1))
+            {
+                case 0:
+                    StartMenu();
+                    break;
+                case 1:
+                    PurchaseMenu();
+                    break;
+
+            }
+        }
+
+
         private static void EquipMenu()
         {
             Console.Clear();
@@ -215,8 +347,10 @@ namespace fix
 
             for (int i = 0; i < Item.ItemCnt; i++)
             {
-                items[i].PrintItmeStatDescription(true, i+1);
+                items[i].PrintItmeStatDescription(true, i + 1);
             }
+
+            
             Console.WriteLine("");
             Console.WriteLine("0. 뒤로가기");
             Console.WriteLine("");
@@ -239,6 +373,25 @@ namespace fix
         private static void ToggleEquipStatus(int idx)
         {
             items[idx].IsEquipped = !items[idx].IsEquipped;
+        }
+
+        private static int BuyItem(int idx)
+        {
+
+            if(player.Gold >= items[idx].Price)
+            {
+                player.Gold -= items[idx].Price; // gold에서 가격을 뺌
+                items[idx].Count = 0;
+            }
+            else if(items[idx].Count == 0)
+            {
+                Console.WriteLine("이미 구매한 상품입니다.");
+            }
+            else
+            {
+                Console.WriteLine("Gold가 부족합니다.");
+            }
+            return player.Gold;
         }
 
         private static void StatusMenu()
@@ -284,6 +437,8 @@ namespace fix
             }
             return sum;
         }
+
+
 
         private static int GetSumBonusDef()
         {
@@ -359,16 +514,26 @@ namespace fix
 
         }
 
+        
+
         private static void GameDataSetting()
         {
             player = new Charater("chad", "전사", 1, 10, 5, 100, 1500);
+            //items = new List<Item>();
             items = new Item[10];
-            AddItem(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0));
-            //AddItem(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0));
-            //AddItem(new Item("스파르타의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 15, 0));
-            AddItem(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검 입니다.", 1, 2, 0, 0));
-            //AddItem(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0));
-            //AddItem(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0));
+            AddItem(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0, 1000));
+            AddItem(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0, 350));
+            AddItem(new Item("스파르타의 갑옷", "스파르타 전사들이 사용했다는 전설의 갑옷입니다.", 0, 0, 15, 0, 3500));
+            AddItem(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검 입니다.", 1, 2, 0, 0, 600));
+            AddItem(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0, 1500));
+            AddItem(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0, 350));
+
+            /*items.Add(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0, 1000));
+            items.Add(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0, 350));
+            items.Add(new Item("스파르타의 갑옷", "스파르타 전사들이 사용했다는 전설의 갑옷입니다.", 0, 0, 15, 0, 3500));
+            items.Add(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검 입니다.", 1, 2, 0, 0, 600));
+            items.Add(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0, 1500));
+            items.Add(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0, 350));*/
         }
 
         static void AddItem(Item item)
