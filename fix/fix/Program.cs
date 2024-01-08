@@ -4,6 +4,8 @@
 
 
 
+using System.ComponentModel;
+
 namespace fix
 {
     public class Charater
@@ -40,7 +42,7 @@ namespace fix
         public int Price { get; set; }
         public bool IsEquipped { get; set; }
         public static int ItemCnt = 0;
-        public int Count = 1;
+        public int Count = 1; // 아이템 개수
 
         public Item(string name, string description, int type, int atk, int def, int hp,int price, bool isEquipped = false, int count = 1)
         {
@@ -55,17 +57,16 @@ namespace fix
             Count = count;
         }
 
-        public void PrintItmeStatDescription(bool withNumber = false, int idx = 0) // 인벤토리 장착 E 출력
+        public void PrintItmeStatDescription(bool withNumber = false,int idx = 0) // 인벤토리 장착 E 출력
         {
             if(Count == 0)
             {
-                Console.Write("- ");
                 if (withNumber)
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                    Console.Write("{0} ", idx);
-                    Console.ResetColor();
-                }
+                 {
+                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                     Console.Write("{0} ", idx);
+                     Console.ResetColor();
+                 }
                 if (IsEquipped)
                 {
                     Console.Write("[");
@@ -146,6 +147,7 @@ namespace fix
             
         }
 
+
         public static int GetPrintableLength(string str)
         {
             int length = 0;
@@ -178,6 +180,9 @@ namespace fix
     {
         static Charater player;
         static Item[] items; // 상점 아이템 목록
+        static Item[] inven = new Item[10]; // 인벤토리 목록
+        static int invenIdx = 0;
+        static int shopFailed;
         static void Main(string[] args)
         {
             // 구성
@@ -229,39 +234,7 @@ namespace fix
             
         }
 
-        private static void InventoryMenu()
-        {
-            Console.Clear();
-
-            ShowHighlightedText("인벤토리");
-            Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.");
-            Console.WriteLine("");
-            Console.WriteLine("[아이템 목록]");
-
-            for(int i = 0; i < Item.ItemCnt; i++)
-            {
-                items[i].PrintItmeStatDescription();
-            }
-            Console.WriteLine("");
-
-            Console.WriteLine("0. 나가기");
-            Console.WriteLine("1. 장착관리");
-
-            Console.WriteLine("");
-
-            switch (CheckValidInput(0, 1))
-            {
-                case 0:
-                    StartMenu();
-                    break;
-                case 1:
-                    EquipMenu();
-                    break;
-
-            }
-        }
-
-        private static void PurchaseMenu() 
+        private static void PurchaseMenu()
         {
             Console.Clear();
 
@@ -277,7 +250,17 @@ namespace fix
 
             for (int i = 0; i < Item.ItemCnt; i++)
             {
-                items[i].PurchasItmeDescription(true, i+1);
+                items[i].PurchasItmeDescription(true, i + 1);
+            }
+
+            Console.WriteLine("");
+            if (shopFailed == -1)
+            {
+                Console.WriteLine("Gold가 부족합니다.");
+            }
+            else if(shopFailed == -2)
+            {
+                Console.WriteLine("이미 구매한 상품입니다.");
             }
 
             Console.WriteLine("");
@@ -297,6 +280,7 @@ namespace fix
                     break;
 
             }
+
         }
 
         private static void ShopMenu()
@@ -335,6 +319,40 @@ namespace fix
             }
         }
 
+        private static void InventoryMenu()
+        {
+            Console.Clear();
+
+            ShowHighlightedText("인벤토리");
+            Console.WriteLine("보유 중인 아이템을 관리할 수 있습니다.");
+            Console.WriteLine("");
+            Console.WriteLine("[아이템 목록]");
+
+            for(int i = 0; i < invenIdx; i++)
+            {
+                inven[i].PrintItmeStatDescription();
+            }
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+            Console.WriteLine("1. 장착관리");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 1))
+            {
+                case 0:
+                    StartMenu();
+                    break;
+                case 1:
+                    EquipMenu();
+                    break;
+
+            }
+        }
+
+      
+
 
         private static void EquipMenu()
         {
@@ -345,9 +363,9 @@ namespace fix
             Console.WriteLine("");
             Console.WriteLine("[아이템 목록]");
 
-            for (int i = 0; i < Item.ItemCnt; i++)
+            for (int i = 0; i < invenIdx; i++)
             {
-                items[i].PrintItmeStatDescription(true, i + 1);
+                inven[i].PrintItmeStatDescription(true, i + 1);
             }
 
             
@@ -355,7 +373,7 @@ namespace fix
             Console.WriteLine("0. 뒤로가기");
             Console.WriteLine("");
 
-            int keyInput = CheckValidInput(0, Item.ItemCnt);
+            int keyInput = CheckValidInput(0, invenIdx); //Item.ItemCnt);
 
             switch (keyInput)
             {
@@ -372,24 +390,30 @@ namespace fix
 
         private static void ToggleEquipStatus(int idx)
         {
-            items[idx].IsEquipped = !items[idx].IsEquipped;
+            //items[idx].IsEquipped = !items[idx].IsEquipped;
+            inven[idx].IsEquipped = !inven[idx].IsEquipped;
         }
+
 
         private static int BuyItem(int idx)
         {
+            if (items[idx].Count != 0)
+            {
+                if (player.Gold >= items[idx].Price)
+                {
+                    player.Gold -= items[idx].Price; // gold에서 가격을 뺌
+                    Array.Copy(items, idx, inven, invenIdx++, 1); // items에 있는 내용을 인벤토리에 복사
+                    items[idx].Count = 0;
 
-            if(player.Gold >= items[idx].Price)
-            {
-                player.Gold -= items[idx].Price; // gold에서 가격을 뺌
-                items[idx].Count = 0;
-            }
-            else if(items[idx].Count == 0)
-            {
-                Console.WriteLine("이미 구매한 상품입니다.");
+                }
+                else if (player.Gold < items[idx].Price)
+                {
+                    return shopFailed = -1;
+                }
             }
             else
             {
-                Console.WriteLine("Gold가 부족합니다.");
+                return shopFailed = -2;
             }
             return player.Gold;
         }
@@ -520,13 +544,16 @@ namespace fix
         {
             player = new Charater("chad", "전사", 1, 10, 5, 100, 1500);
             //items = new List<Item>();
-            items = new Item[10];
+            items = new Item[10];                
             AddItem(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0, 1000));
             AddItem(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0, 350));
             AddItem(new Item("스파르타의 갑옷", "스파르타 전사들이 사용했다는 전설의 갑옷입니다.", 0, 0, 15, 0, 3500));
             AddItem(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검 입니다.", 1, 2, 0, 0, 600));
             AddItem(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0, 1500));
             AddItem(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0, 350));
+
+            
+            
 
             /*items.Add(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0, 1000));
             items.Add(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0, 350));
@@ -545,5 +572,6 @@ namespace fix
             items[Item.ItemCnt] = item;
             Item.ItemCnt++;
         }
+
     }
 }
