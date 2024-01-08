@@ -13,9 +13,9 @@ namespace fix
         public string Name { get; }
         public string Jop { get; }
         public int Level { get; }
-        public int Atk { get; }
-        public int Def { get; }
-        public int Hp { get; }
+        public int Atk { get; set; }
+        public int Def { get; set; }
+        public int Hp { get; set; }
         public int Gold { get; set; }
 
         public Charater(string name, string jop, int level, int atk, int def, int hp, int gold)
@@ -28,6 +28,18 @@ namespace fix
             Hp = hp;
             Gold = gold;
 
+        }
+    }
+
+    public class Monster
+    {
+        public string Name { get; set; }
+        public int Hp { get; set; }
+
+        public Monster(string name, int hp)
+        {
+            Name = name;
+            Hp = hp;
         }
     }
 
@@ -177,6 +189,7 @@ namespace fix
     internal class Program
     {
         static Charater player;
+        static Monster[] monster;
         static Item[] items; // 상점 아이템 목록
         static Item[] inven = new Item[10]; // 인벤토리 목록
         static int invenIdx = 0;
@@ -213,10 +226,12 @@ namespace fix
             Console.WriteLine("1. 상태 보기");
             Console.WriteLine("2. 인벤토리");
             Console.WriteLine("3. 상점");
+            Console.WriteLine("4. 던전입장");
+            Console.WriteLine("5. 휴식하기");
 
             Console.WriteLine("");
 
-            switch(CheckValidInput(1, 3))
+            switch(CheckValidInput(1, 5))
             {
                 case 1:
                     StatusMenu();
@@ -227,9 +242,269 @@ namespace fix
                 case 3:
                     ShopMenu();
                     break;
+                case 4:
+                    DungeonMenu();
+                    break;
+                case 5:
+                    Rest();
+                    break;
 
             }
             
+        }
+
+        private static void Rest()
+        {
+            if (player.Hp == 100)
+            {
+                Console.WriteLine("이미 체력이 가득 차 있습니다.");
+            }
+            else
+            {
+                if (player.Gold >= 500)
+                {
+                    Console.WriteLine("체력을 회복했습니다.");
+                    player.Hp = 100;
+                    player.Gold -= 500;
+                }
+                else
+                {
+                    Console.WriteLine("Gold가 부족합니다.");
+                }
+            }
+
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 0))
+            {
+                case 0:
+                    StartMenu();
+                    break;
+                default:
+                    Rest();
+                    break;
+
+            }
+        }
+
+        private static void DungeonMenu()
+        {
+            Console.Clear();
+
+            ShowHighlightedText("던전");
+            Console.WriteLine("몬스터를 쓰러트리고 보상을 얻을 수 있습니다.");
+            Console.WriteLine("");
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Easy(쉬움)");
+            Console.ResetColor();
+            Console.WriteLine(" - 권장 방어력 : 5");
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write("Normal(보통)");
+            Console.ResetColor();
+            Console.WriteLine(" - 권장 방어력 : 10");
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("Hard(어려움)");
+            Console.ResetColor();
+            Console.WriteLine(" - 권장 방어력 : 15");
+
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+            Console.WriteLine("1. Easy(쉬움)");
+            Console.WriteLine("2. Normal(보통)");
+            Console.WriteLine("3. Hard(어려움)");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 3))
+            {
+                case 0:
+                    StartMenu();
+                    break;
+                case 1:
+                    Easy();
+                    break;
+                case 2:
+                    Normal();
+                    break;
+                case 3:
+                    Hard();
+                    break;
+
+            }
+        }
+
+        private static void Easy()
+        {
+            Console.Clear();
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Easy(쉬움)");
+            Console.ResetColor();
+
+            while (player.Hp > 0 && monster[0].Hp > 0)
+            {
+                Random damage = new Random();
+                int monster_damage = damage.Next(player.Atk, 41);
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[0].Name, player.Atk);
+                monster[0].Hp -= monster_damage;
+
+                Console.WriteLine("");
+                int player_damage = damage.Next(20, 36);
+
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[0].Name, player.Name, player_damage);
+                player.Hp -= player_damage;
+                Console.WriteLine("");
+
+                if (monster[0].Hp <= 0)
+                {
+                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[0].Name);
+                    Console.WriteLine("던전 성공");
+                    Console.WriteLine("남은 체력 : {0}", player.Hp);
+                    Console.WriteLine("클리어 보상으로 1000G를 획득하였습니다.");
+                    player.Gold += 1000;
+                }
+                else if (player.Hp <= 0)
+                {
+                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                    Console.WriteLine("던전 실패");
+                }
+            }
+
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 0))
+            {
+                case 0:
+                    DungeonMenu();
+                    break;
+                default:
+                    Easy();
+                    break;
+
+            }
+        }
+
+        private static void Normal()
+        {
+            Console.Clear();
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("Normal(보통)");
+            Console.ResetColor();
+
+            while (player.Hp > 0 && monster[1].Hp > 0)
+            {
+                Random damage = new Random();
+                int monster_damage = damage.Next(player.Atk, 41);
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[1].Name, player.Atk);
+                monster[1].Hp -= monster_damage;
+
+                Console.WriteLine("");
+                int player_damage = damage.Next(20, 36);
+
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[1].Name, player.Name, player_damage);
+                player.Hp -= player_damage;
+                Console.WriteLine("");
+
+                if (monster[1].Hp <= 0)
+                {
+                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[1].Name);
+                    Console.WriteLine("던전 성공");
+                    Console.WriteLine("남은 체력 : {0}", player.Hp);
+                    Console.WriteLine("클리어 보상으로 1700G를 획득하였습니다.");
+                    player.Gold += 1700;
+                }
+                else if (player.Hp <= 0)
+                {
+                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                    Console.WriteLine("던전 실패");
+                }
+            }
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 0))
+            {
+                case 0:
+                    DungeonMenu();
+                    break;
+                default:
+                    Normal();
+                    break;
+
+            }
+        }
+
+        private static void Hard()
+        {
+            Console.Clear();
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Hard(어려움)");
+            Console.ResetColor();
+
+            while (player.Hp > 0 && monster[2].Hp > 0)
+            {
+                Random damage = new Random();
+                int monster_damage = damage.Next(player.Atk, 41);
+
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[2], player.Atk);
+                monster[2].Hp -= monster_damage;
+
+                Console.WriteLine("");
+
+
+                int player_damage = damage.Next(20, 36);
+
+                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[2].Name, player.Name, player_damage);
+                player.Hp -= player_damage;
+                Console.WriteLine("");
+
+                if (monster[2].Hp <= 0)
+                {
+                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[2].Name);
+                    Console.WriteLine("던전 성공");
+                    Console.WriteLine("남은 체력 : {0}", player.Hp);
+                    Console.WriteLine("클리어 보상으로 2500G를 획득하였습니다.");
+                    player.Gold += 2500;
+                }
+                else if (player.Hp <= 0)
+                {
+                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                    Console.WriteLine("던전 실패");
+                }
+            }
+            Console.WriteLine("");
+
+            Console.WriteLine("0. 나가기");
+
+            Console.WriteLine("");
+
+            switch (CheckValidInput(0, 0))
+            {
+                case 0:
+                    DungeonMenu();
+                    break;
+                default:
+                    Hard();
+                    break;
+
+            }
         }
 
         private static void PurchaseMenu()
@@ -550,15 +825,11 @@ namespace fix
             AddItem(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0, 1500));
             AddItem(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0, 350));
 
-            
-            
+            monster = new Monster[3];
 
-            /*items.Add(new Item("수련자의 갑옷", "수련에 도움을 주는 갑옷입니다.", 0, 0, 5, 0, 1000));
-            items.Add(new Item("무쇠갑옷", "무쇠로 만들어져 튼튼한 갑옷입니다.", 0, 0, 9, 0, 350));
-            items.Add(new Item("스파르타의 갑옷", "스파르타 전사들이 사용했다는 전설의 갑옷입니다.", 0, 0, 15, 0, 3500));
-            items.Add(new Item("낡은 검", "쉽게 볼 수 있는 낡은 검 입니다.", 1, 2, 0, 0, 600));
-            items.Add(new Item("청동 도끼", "어디선가 사용됐던거 같은 도끼입니다.", 1, 5, 0, 0, 1500));
-            items.Add(new Item("스파르타의 창", "스파르타의 전사들이 사용했다는 전설의 창입니다.", 1, 7, 0, 0, 350));*/
+            monster[0] = new Monster("slime", 50); // 쉬움
+            monster[1] = new Monster("goblin", 70); // 보통
+            monster[2] = new Monster("wolf", 100); // 어려움
         }
 
         static void AddItem(Item item)
