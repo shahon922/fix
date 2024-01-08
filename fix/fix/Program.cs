@@ -255,13 +255,13 @@ namespace fix
 
         private static void Rest()
         {
-            if (player.Hp == 100)
+            if (player.Hp == 100) 
             {
                 Console.WriteLine("이미 체력이 가득 차 있습니다.");
             }
             else
             {
-                if (player.Gold >= 500)
+                if (player.Gold >= 500) 
                 {
                     Console.WriteLine("체력을 회복했습니다.");
                     player.Hp = 100;
@@ -343,7 +343,8 @@ namespace fix
 
         private static void Easy()
         {
-            Console.Clear();
+            Console.Clear();    
+            monster[0] = new Monster("slime", 50); // 쉬움
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Easy(쉬움)");
@@ -351,25 +352,25 @@ namespace fix
 
             while (player.Hp > 0 && monster[0].Hp > 0)
             {
-                Random damage = new Random();
-                int monster_damage = damage.Next(player.Atk, 41);
+                Random damage = new Random(); // 랜덤으로 숫자가 만들어 지도록
+                int monster_damage = damage.Next(player.Atk, 41); // 유저의 공격력 이상 41미만 중 숫자 출력
                 Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[0].Name, player.Atk);
-                monster[0].Hp -= monster_damage;
+                monster[0].Hp -= monster_damage; // 몬스터의 체력을 데미지만큼 빼고 넣음
 
                 Console.WriteLine("");
-                int player_damage = damage.Next(20, 36);
+                int player_damage = damage.Next(20, 36); // 몬스터의 공격 데미지 20이상 36미만 중 숫자 출력
 
                 Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[0].Name, player.Name, player_damage);
-                player.Hp -= player_damage;
+                player.Hp -= player_damage; // 유저의 체력을 데미지 만큼 빼고 넣음
                 Console.WriteLine("");
 
-                if (monster[0].Hp <= 0)
+                if (monster[0].Hp <= 0) //몬스터의 체력이 0보다 작을 때
                 {
                     Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[0].Name);
                     Console.WriteLine("던전 성공");
-                    Console.WriteLine("남은 체력 : {0}", player.Hp);
+                    Console.WriteLine("남은 체력 : {0}", player.Hp); // 남은 체력 출력
                     Console.WriteLine("클리어 보상으로 1000G를 획득하였습니다.");
-                    player.Gold += 1000;
+                    player.Gold += 1000; // 1000골드 추가
                 }
                 else if (player.Hp <= 0)
                 {
@@ -399,6 +400,7 @@ namespace fix
         private static void Normal()
         {
             Console.Clear();
+            monster[1] = new Monster("goblin", 70); // 보통
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("Normal(보통)");
@@ -453,6 +455,7 @@ namespace fix
         private static void Hard()
         {
             Console.Clear();
+            monster[2] = new Monster("wolf", 100); // 어려움
 
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Hard(어려움)");
@@ -827,9 +830,7 @@ namespace fix
 
             monster = new Monster[3];
 
-            monster[0] = new Monster("slime", 50); // 쉬움
-            monster[1] = new Monster("goblin", 70); // 보통
-            monster[2] = new Monster("wolf", 100); // 어려움
+            
         }
 
         static void AddItem(Item item)
