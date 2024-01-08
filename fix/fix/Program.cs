@@ -34,11 +34,13 @@ namespace fix
     public class Monster
     {
         public string Name { get; set; }
+        public int Def { get; set; }
         public int Hp { get; set; }
 
-        public Monster(string name, int hp)
+        public Monster(string name,int def, int hp)
         {
             Name = name;
+            Def = def;
             Hp = hp;
         }
     }
@@ -295,31 +297,15 @@ namespace fix
         {
             Console.Clear();
 
-            ShowHighlightedText("던전");
-            Console.WriteLine("몬스터를 쓰러트리고 보상을 얻을 수 있습니다.");
+            ShowHighlightedText("던전입장");
+            Console.WriteLine("이곳에서 던전으로 들어가기전 활동을 할 수 있습니다.");
             Console.WriteLine("");
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Easy(쉬움)");
-            Console.ResetColor();
-            Console.WriteLine(" - 권장 방어력 : 5");
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("Normal(보통)");
-            Console.ResetColor();
-            Console.WriteLine(" - 권장 방어력 : 10");
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("Hard(어려움)");
-            Console.ResetColor();
-            Console.WriteLine(" - 권장 방어력 : 15");
-
-            Console.WriteLine("");
 
             Console.WriteLine("0. 나가기");
-            Console.WriteLine("1. Easy(쉬움)");
-            Console.WriteLine("2. Normal(보통)");
-            Console.WriteLine("3. Hard(어려움)");
+            Console.WriteLine("1. 쉬운 던전");
+            Console.WriteLine("2. 일반 던전");
+            Console.WriteLine("3. 어려운 던전");
 
             Console.WriteLine("");
 
@@ -343,39 +329,61 @@ namespace fix
 
         private static void Easy()
         {
-            Console.Clear();    
-            monster[0] = new Monster("slime", 50); // 쉬움
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Easy(쉬움)");
-            Console.ResetColor();
-
-            while (player.Hp > 0 && monster[0].Hp > 0)
+            Console.Clear();
+            if (player.Hp <= 0) // 체력이 0이하 못함
             {
-                Random damage = new Random(); // 랜덤으로 숫자가 만들어 지도록
-                int monster_damage = damage.Next(player.Atk, 41); // 유저의 공격력 이상 41미만 중 숫자 출력
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[0].Name, player.Atk);
-                monster[0].Hp -= monster_damage; // 몬스터의 체력을 데미지만큼 빼고 넣음
+                Console.WriteLine("체력이 없습니다.");
+            }
+            else
+            {
+                monster[0] = new Monster("slime", 5, 50); // 쉬움
 
-                Console.WriteLine("");
-                int player_damage = damage.Next(20, 36); // 몬스터의 공격 데미지 20이상 36미만 중 숫자 출력
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Easy(쉬움)");
+                Console.ResetColor();
 
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[0].Name, player.Name, player_damage);
-                player.Hp -= player_damage; // 유저의 체력을 데미지 만큼 빼고 넣음
-                Console.WriteLine("");
-
-                if (monster[0].Hp <= 0) //몬스터의 체력이 0보다 작을 때
+                while (player.Hp > 0 && monster[0].Hp > 0)
                 {
-                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[0].Name);
-                    Console.WriteLine("던전 성공");
-                    Console.WriteLine("남은 체력 : {0}", player.Hp); // 남은 체력 출력
-                    Console.WriteLine("클리어 보상으로 1000G를 획득하였습니다.");
-                    player.Gold += 1000; // 1000골드 추가
-                }
-                else if (player.Hp <= 0)
-                {
-                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
-                    Console.WriteLine("던전 실패");
+                    Random damage = new Random(); // 랜덤으로 숫자가 만들어 지도록
+                    int monster_damage = damage.Next(10, 41); // 유저의 공격력 이상 41미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[0].Name, player.Atk);
+                    monster[0].Hp -= monster_damage; // 몬스터의 체력을 데미지만큼 빼고 넣음
+
+                    Console.WriteLine("");
+
+                    int player_damage = damage.Next(20, 36); // 몬스터의 공격 데미지 20이상 36미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[0].Name, player.Name, player_damage);
+                    player.Hp -= player_damage; // 유저의 체력을 데미지 만큼 빼고 넣음
+                    Console.WriteLine("");
+
+                    if (monster[0].Hp <= 0) //몬스터의 체력이 0보다 작을 때
+                    {
+
+                        ShowHighlightedText("던전 클리어");
+                        Console.WriteLine("축하합니다!!");
+                        Console.WriteLine("쉬운 던전을 클리어 하였습니다.");
+
+                        Console.WriteLine("[탐험 결과]");
+                        Console.Write("체력 : ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("{0}", player.Hp);
+                        Console.ResetColor();
+
+                        player.Gold += 1000;
+                        Console.Write("Gold : ");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.Write("{0} ", player.Gold);
+                        Console.ResetColor();
+                        Console.WriteLine("G");
+
+                        Console.WriteLine("");
+
+                    }
+                    else if (player.Hp <= 0)
+                    {
+                        Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                        Console.WriteLine("던전 실패");
+                    }
                 }
             }
 
@@ -400,40 +408,63 @@ namespace fix
         private static void Normal()
         {
             Console.Clear();
-            monster[1] = new Monster("goblin", 70); // 보통
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("Normal(보통)");
-            Console.ResetColor();
-
-            while (player.Hp > 0 && monster[1].Hp > 0)
+            if (player.Hp <= 0)
             {
-                Random damage = new Random();
-                int monster_damage = damage.Next(player.Atk, 41);
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[1].Name, player.Atk);
-                monster[1].Hp -= monster_damage;
+                Console.WriteLine("체력이 없습니다.");
+            }
+            else
+            {
+                monster[1] = new Monster("goblin", 7, 70); // 보통
 
-                Console.WriteLine("");
-                int player_damage = damage.Next(20, 36);
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("Normal(보통)");
+                Console.ResetColor();
 
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[1].Name, player.Name, player_damage);
-                player.Hp -= player_damage;
-                Console.WriteLine("");
-
-                if (monster[1].Hp <= 0)
+                while (player.Hp > 0 && monster[1].Hp > 0)
                 {
-                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[1].Name);
-                    Console.WriteLine("던전 성공");
-                    Console.WriteLine("남은 체력 : {0}", player.Hp);
-                    Console.WriteLine("클리어 보상으로 1700G를 획득하였습니다.");
-                    player.Gold += 1700;
-                }
-                else if (player.Hp <= 0)
-                {
-                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
-                    Console.WriteLine("던전 실패");
+                    Random damage = new Random(); // 랜덤으로 숫자가 만들어 지도록
+                    int monster_damage = damage.Next(10, 41); // 유저의 공격력 이상 41미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[1].Name, player.Atk);
+                    monster[1].Hp -= monster_damage; // 몬스터의 체력을 데미지만큼 빼고 넣음
+
+
+                    Console.WriteLine("");
+                    int player_damage = damage.Next(20, 36); // 몬스터의 공격 데미지 20이상 36미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[1].Name, player.Name, player_damage);
+                    player.Hp -= player_damage; // 유저의 체력을 데미지 만큼 빼고 넣음
+                    Console.WriteLine("");
+
+                    if (monster[0].Hp <= 0) //몬스터의 체력이 0보다 작을 때
+                    {
+
+                        ShowHighlightedText("던전 클리어");
+                        Console.WriteLine("축하합니다!!");
+                        Console.WriteLine("일반 던전을 클리어 하였습니다.");
+
+                        Console.WriteLine("[탐험 결과]");
+                        Console.Write("체력 : ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("{0}", player.Hp);
+                        Console.ResetColor();
+
+                        player.Gold += 1700;
+                        Console.Write("Gold : ");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.Write("{0} ", player.Gold);
+                        Console.ResetColor();
+                        Console.WriteLine("G");
+
+                        Console.WriteLine("");
+
+                    }
+                    else if (player.Hp <= 0)
+                    {
+                        Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                        Console.WriteLine("던전 실패");
+                    }
                 }
             }
+   
             Console.WriteLine("");
 
             Console.WriteLine("0. 나가기");
@@ -455,43 +486,63 @@ namespace fix
         private static void Hard()
         {
             Console.Clear();
-            monster[2] = new Monster("wolf", 100); // 어려움
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Hard(어려움)");
-            Console.ResetColor();
-
-            while (player.Hp > 0 && monster[2].Hp > 0)
+            if(player.Hp <= 0)
             {
-                Random damage = new Random();
-                int monster_damage = damage.Next(player.Atk, 41);
+                Console.WriteLine("체력이 없습니다.");
+            }
+            else
+            {
+                monster[2] = new Monster("wolf", 11, 100); // 어려움
 
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[2], player.Atk);
-                monster[2].Hp -= monster_damage;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Hard(어려움)");
+                Console.ResetColor();
 
-                Console.WriteLine("");
-
-
-                int player_damage = damage.Next(20, 36);
-
-                Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[2].Name, player.Name, player_damage);
-                player.Hp -= player_damage;
-                Console.WriteLine("");
-
-                if (monster[2].Hp <= 0)
+                while (player.Hp > 0 && monster[2].Hp > 0)
                 {
-                    Console.WriteLine("{0}을 쓰러뜨렸습니다.", monster[2].Name);
-                    Console.WriteLine("던전 성공");
-                    Console.WriteLine("남은 체력 : {0}", player.Hp);
-                    Console.WriteLine("클리어 보상으로 2500G를 획득하였습니다.");
-                    player.Gold += 2500;
-                }
-                else if (player.Hp <= 0)
-                {
-                    Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
-                    Console.WriteLine("던전 실패");
+                    Random damage = new Random(); // 랜덤으로 숫자가 만들어 지도록
+                    int monster_damage = damage.Next(10, 41); // 유저의 공격력 이상 41미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", player.Name, monster[2].Name, player.Atk);
+                    monster[2].Hp -= monster_damage; // 몬스터의 체력을 데미지만큼 빼고 넣음
+
+                    Console.WriteLine("");
+
+                    int player_damage = damage.Next(20, 36); // 몬스터의 공격 데미지 20이상 36미만 중 숫자 출력
+                    Console.WriteLine("{0}이 공격했습니다. {1} {2} 데미지", monster[2].Name, player.Name, player_damage);
+                    player.Hp -= player_damage; // 유저의 체력을 데미지 만큼 빼고 넣음
+                    Console.WriteLine("");
+
+                    if (player.Hp <= 0)
+                    {
+                        Console.WriteLine("{0}의 체력이 0이 되었습니다.", player.Name);
+                        Console.WriteLine("던전 실패");
+                    }
+                    else if (monster[2].Hp <= 0) //몬스터의 체력이 0보다 작을 때
+                    {
+
+                        ShowHighlightedText("던전 클리어");
+                        Console.WriteLine("축하합니다!!");
+                        Console.WriteLine("어려운 던전을 클리어 하였습니다.");
+
+                        Console.WriteLine("[탐험 결과]");
+                        Console.Write("체력 : ");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("{0}", player.Hp);
+                        Console.ResetColor();
+
+                        player.Gold += 2500;
+                        Console.Write("Gold : ");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.Write("{0} ", player.Gold);
+                        Console.ResetColor();
+                        Console.WriteLine("G");
+
+                        Console.WriteLine("");
+
+                    }
                 }
             }
+        
             Console.WriteLine("");
 
             Console.WriteLine("0. 나가기");
