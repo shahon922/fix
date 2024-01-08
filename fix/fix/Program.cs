@@ -59,47 +59,45 @@ namespace fix
 
         public void PrintItmeStatDescription(bool withNumber = false,int idx = 0) // 인벤토리 장착 E 출력
         {
-            if(Count == 0)
+            if (withNumber)
             {
-                if (withNumber)
-                 {
-                     Console.ForegroundColor = ConsoleColor.DarkMagenta;
-                     Console.Write("{0} ", idx);
-                     Console.ResetColor();
-                 }
-                if (IsEquipped)
-                {
-                    Console.Write("[");
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.Write("E");
-                    Console.ResetColor();
-                    Console.Write("]");
-                    Console.Write(PadRightForMixedText(Name, 9));
-                }
-                else
-                {
-                    Console.Write(PadRightForMixedText(Name, 12));
-                }
-                Console.Write(" | ");
-
-                // {(Atk >= 0 ? "+" : "") [조건 ? 조건이 참이라면 : 조건이 거짓이라면]
-                if (Atk != 0)
-                {
-                    Console.Write($"Atk {(Atk >= 0 ? "+" : "")}{Atk}");
-                }
-                else if (Def != 0)
-                {
-                    Console.Write($"Def {(Def >= 0 ? "+" : "")}{Def}");
-                }
-                else if (Hp != 0)
-                {
-                    Console.Write($"Hp {(Hp >= 0 ? "+" : "")}{Hp}");
-                }
-
-                Console.Write(" | ");
-
-                Console.WriteLine(Description);
+                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.Write("{0} ", idx);
+                Console.ResetColor();
             }
+            if (IsEquipped)
+            {
+                Console.Write("[");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("E");
+                Console.ResetColor();
+                Console.Write("]");
+                Console.Write(PadRightForMixedText(Name, 9));
+            }
+            else
+            {
+                Console.Write(PadRightForMixedText(Name, 12));
+            }
+            Console.Write(" | ");
+
+            // {(Atk >= 0 ? "+" : "") [조건 ? 조건이 참이라면 : 조건이 거짓이라면]
+            if (Atk != 0)
+            {
+                Console.Write($"Atk {(Atk >= 0 ? "+" : "")}{Atk}");
+            }
+            else if (Def != 0)
+            {
+                Console.Write($"Def {(Def >= 0 ? "+" : "")}{Def}");
+            }
+            else if (Hp != 0)
+            {
+                Console.Write($"Hp {(Hp >= 0 ? "+" : "")}{Hp}");
+            }
+
+            Console.Write(" | ");
+
+            Console.WriteLine(Description);
+
         }
 
         public void PurchasItmeDescription(bool withNumber = false, int idx = 0) // 상점 내용 출력
